@@ -1,32 +1,40 @@
 name: CI and Pages
+
 on:
   push:
     branches: [main]
+
 permissions:
   contents: read
+
 concurrency:
   group: pages
   cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
     steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          package-manager-cache: false
+      - uses: actions/checkout@v4   # keep your existing checkout/setup-node steps
+      # ... setup-node here ...
       - run: npm ci
       - run: npm test
       - run: npm run build
+
       - name: Configure Pages
         uses: actions/configure-pages@v6
+        with:
+          enablement: true
+
       - name: Upload tested site
         uses: actions/upload-pages-artifact@v5
         with:
           path: dist/
+          retention-days: 7
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
